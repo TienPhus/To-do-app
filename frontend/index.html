@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Do-It</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface2: #1c1c27;
+      --border: #2a2a3a;
+      --blue: #4f8ef7;
+      --blue2: #2563eb;
+      --purple: #a259f7;
+      --pink: #f7597a;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --todo: #f59e0b;
+      --ongoing: #4f8ef7;
+      --done: #22c55e;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ===== SIDEBAR ===== */
+    #sidebar {
+      width: 260px;
+      min-height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 16px;
+      gap: 8px;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      overflow-y: auto;
+    }
+
+    .user-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
+      background: var(--surface2);
+      border-radius: 12px;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+    }
+    .user-card .user-info { flex: 1; min-width: 0; }
+    .user-card .user-name {
+      white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .user-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.85rem; color: white;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .user-name { font-size: 0.82rem; font-weight: 500; }
+    .user-email { font-size: 0.7rem; color: var(--muted); }
+
+    .btn-logout {
+      margin-left: auto;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .btn-logout:hover { border-color: var(--pink); color: var(--pink); }
+
+    .sidebar-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 8px 0;
+    }
+
+    .sidebar-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0 4px;
+      margin-top: 4px;
+    }
+
+    .cat-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: none;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .cat-btn:hover { background: var(--surface2); color: var(--text); }
+    .cat-btn.active {
+      background: linear-gradient(135deg, rgba(79,142,247,0.15), rgba(162,89,247,0.1));
+      border-color: rgba(79,142,247,0.3);
+      color: var(--text);
+    }
+    .cat-btn .cat-count {
+      margin-left: auto;
+      font-size: 0.72rem;
+      color: var(--muted);
+      background: var(--surface2);
+      padding: 2px 6px;
+      border-radius: 20px;
+    }
+    .cat-btn.active .cat-count {
+      background: rgba(79,142,247,0.2);
+      color: var(--blue);
+    }
+    .cat-delete {
+      margin-left: 4px;
+      opacity: 0;
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.8rem;
+      padding: 2px 4px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .cat-btn:hover .cat-delete { opacity: 1; }
+    .cat-delete:hover { color: var(--pink); }
+
+    .progress-bar {
+      height: 3px;
+      background: var(--surface2);
+      border-radius: 99px;
+      margin: 3px 4px 6px 4px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--purple));
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    .cat-input-wrap {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .cat-input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .cat-input:focus { border-color: var(--blue); }
+    .cat-input::placeholder { color: var(--muted); }
+    .btn-add-cat {
+      background: linear-gradient(135deg, var(--blue), var(--blue2));
+      border: none;
+      color: white;
+      width: 34px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: opacity 0.2s;
+      flex-shrink: 0;
+    }
+    .btn-add-cat:hover { opacity: 0.85; }
+
+    /* ===== MAIN ===== */
+    #main {
+      margin-left: 260px;
+      flex: 1;
+      padding: 28px 36px;
+      max-width: calc(100vw - 260px);
+    }
+
+    .logo-wrap {
+      margin-bottom: 24px;
+    }
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--blue), var(--purple), var(--pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .logo-sub { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+    .stat-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; }
+    .stat-value { font-family: 'DM Sans', sans-serif; font-size: 1.8rem; font-weight: 700; }
+
+    .main-progress-wrap { margin-bottom: 24px; }
+    .main-progress-label {
+      font-size: 0.8rem;
+      color: var(--blue);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .main-progress-bar {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .main-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--purple));
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    /* Task list */
+    #taskList { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      transition: border-color 0.2s, background 0.2s;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+    .task-item:hover { border-color: rgba(79,142,247,0.3); background: var(--surface2); }
+
+    .task-title {
+      flex: 1;
+      font-size: 0.92rem;
+      transition: color 0.2s;
+    }
+    .task-title.done { text-decoration: line-through; color: var(--muted); }
+
+    .status-select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .status-select:focus { border-color: var(--blue); }
+    .status-select.todo { border-color: var(--todo); color: var(--todo); }
+    .status-select.ongoing { border-color: var(--ongoing); color: var(--ongoing); }
+    .status-select.done-sel { border-color: var(--done); color: var(--done); }
+
+    .btn-delete-task {
+      background: none;
+      border: 1px solid transparent;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 5px 8px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .btn-delete-task:hover { border-color: var(--pink); color: var(--pink); background: rgba(247,89,122,0.08); }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    /* Add task */
+    .add-task-wrap {
+      margin-top: 8px;
+    }
+    .add-task-collapsed {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .add-task-collapsed:hover { border-color: var(--blue); color: var(--blue); }
+
+    .add-task-form {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--blue);
+      border-radius: 12px;
+      padding: 16px;
+      gap: 10px;
+      flex-direction: column;
+    }
+    .add-task-form.open { display: flex; }
+
+    .task-input {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    .task-input:focus { border-color: var(--blue); }
+    .task-input::placeholder { color: var(--muted); }
+
+    .form-actions { display: flex; gap: 8px; }
+    .btn-primary {
+      flex: 1;
+      background: linear-gradient(135deg, var(--blue), var(--blue2));
+      border: none;
+      color: white;
+      padding: 10px;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-cancel {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-cancel:hover { border-color: var(--pink); color: var(--pink); }
+
+    /* ===== LOGIN PAGE ===== */
+    #loginPage {
+      display: none;
+      width: 100vw; min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 30% 40%, rgba(79,142,247,0.08) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 60%, rgba(162,89,247,0.08) 0%, transparent 60%),
+                  var(--bg);
+    }
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .login-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--blue), var(--purple), var(--pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    .login-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 36px; }
+    .btn-google {
+      width: 100%;
+      background: white;
+      border: none;
+      color: #333;
+      padding: 14px 20px;
+      border-radius: 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .btn-google:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,0,0,0.4); }
+    .btn-google:active { transform: none; }
+    .google-icon { width: 20px; height: 20px; }
+
+    /* Loading */
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.3s;
+      z-index: 999;
+      pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: none; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="loginPage">
+  <div class="login-card">
+    <div class="login-logo">✅ Do-It</div>
+    <div class="login-sub">Việc hôm nay, xong hôm nay.</div>
+    <button class="btn-google" id="btnGoogleLogin">
+      <svg class="google-icon" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Đăng nhập với Google
+    </button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appLayout" style="display:none; width:100%;">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="user-card" id="userCard">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <div class="user-info">
+        <div class="user-name" id="userName">...</div>
+        <div class="user-email" id="userEmail">...</div>
+      </div>
+      <button class="btn-logout" id="btnLogout">Thoát</button>
+    </div>
+
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-label">Danh mục</div>
+
+    <div id="catList"></div>
+
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-label">Tạo mới</div>
+    <div class="cat-input-wrap">
+      <input class="cat-input" id="catInput" placeholder="Tên danh mục..." />
+      <button class="btn-add-cat" id="btnAddCat">+</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+    <div class="logo-wrap">
+      <div class="logo-text">✅ Do-It</div>
+      <div class="logo-sub">Việc hôm nay, xong hôm nay.</div>
+    </div>
+
+    <div class="section-title" id="sectionTitle">📋 Tất cả</div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">Tổng</div>
+        <div class="stat-value" id="statTotal">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Đang làm</div>
+        <div class="stat-value" id="statOngoing" style="color:var(--ongoing)">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Hoàn thành</div>
+        <div class="stat-value" id="statDone" style="color:var(--done)">0</div>
+      </div>
+    </div>
+
+    <div class="main-progress-wrap" id="mainProgressWrap" style="display:none">
+      <div class="main-progress-label" id="mainProgressLabel">0% hoàn thành</div>
+      <div class="main-progress-bar">
+        <div class="main-progress-fill" id="mainProgressFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div id="taskList"></div>
+
+    <div class="add-task-wrap">
+      <div class="add-task-collapsed" id="addTaskToggle">+ Thêm task mới</div>
+      <div class="add-task-form" id="addTaskForm">
+        <input class="task-input" id="taskInput" placeholder="Tên task..." />
+        <div class="form-actions">
+          <button class="btn-primary" id="btnSubmitTask">✅ Thêm</button>
+          <button class="btn-cancel" id="btnCancelTask">Hủy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut }
+    from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+  // Fill in your firebaseConfig here
+  const firebaseConfig = {
+    apiKey: "AIzaSyAw717VcHRsPi7b1Kv91XF5g_RKI709yMA",
+    authDomain: "to-do-app-8770b.firebaseapp.com",
+    projectId: "to-do-app-8770b",
+  };
+
+  const BACKEND = "http://127.0.0.1:8000";
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  // ===== STATE =====
+  let idToken = null;
+  let allTasks = [];       // tasks đang hiển thị (theo filter)
+  let allTasksGlobal = []; // tất cả tasks (dùng cho sidebar)
+  let categories = [];
+  let activeCatId = null;
+
+  // ===== HELPERS =====
+  function toast(msg, dur = 2500) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    setTimeout(() => el.classList.remove("show"), dur);
+  }
+
+  function headers() {
+    return { "Content-Type": "application/json", "authorization": `Bearer ${idToken}` };
+  }
+
+  async function api(method, path, body) {
+    const res = await fetch(BACKEND + path, {
+      method, headers: headers(),
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  }
+
+  // ===== AUTH =====
+  document.getElementById("btnGoogleLogin").onclick = async () => {
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (e) { toast('Login error: ' + e.message); }
+  };
+
+  document.getElementById("btnLogout").onclick = () => signOut(auth);
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      idToken = await user.getIdToken();
+      // Refresh token every 50 minutes
+      setInterval(async () => { idToken = await user.getIdToken(true); }, 50 * 60 * 1000);
+
+      document.getElementById("loginPage").style.display = "none";
+      document.getElementById("appLayout").style.display = "flex";
+
+      // User info
+      const name = user.displayName || user.email;
+      document.getElementById("userName").textContent = name;
+      document.getElementById("userEmail").textContent = user.email;
+      const avatar = document.getElementById("userAvatar");
+      if (user.photoURL) {
+        avatar.innerHTML = `<img src="${user.photoURL}" alt="avatar">`;
+      } else {
+        avatar.textContent = name[0].toUpperCase();
+      }
+
+      await loadAll();
+    } else {
+      idToken = null;
+      document.getElementById("loginPage").style.display = "flex";
+      document.getElementById("appLayout").style.display = "none";
+    }
+  });
+
+  // ===== DATA =====
+  async function loadAll() {
+    await Promise.all([loadCategories(), loadAllTasksForSidebar(), loadTasks()]);
+  }
+
+  async function loadAllTasksForSidebar() {
+    try {
+      const data = await api("GET", "/tasks/");
+      allTasksGlobal = data.tasks || [];
+    } catch (e) {}
+  }
+
+  async function loadCategories() {
+    try {
+      const data = await api("GET", "/categories/");
+      categories = data.categories || [];
+      renderSidebar();
+    } catch (e) { toast('Error loading categories'); }
+  }
+
+  async function loadTasks(catId = activeCatId) {
+    try {
+      const url = catId ? `/tasks/?category_id=${catId}` : "/tasks/";
+      const data = await api("GET", url);
+      allTasks = data.tasks || [];
+      // Luôn load global để sidebar hiển thị đúng
+      const globalData = await api("GET", "/tasks/");
+      allTasksGlobal = globalData.tasks || [];
+      renderTasks();
+      renderSidebar();
+    } catch (e) { toast('Error loading tasks'); }
+  }
+
+  // ===== RENDER SIDEBAR =====
+  function renderSidebar() {
+    const list = document.getElementById("catList");
+    list.innerHTML = "";
+
+    // All
+    const totalAll = allTasksGlobal.length;
+    const doneAll = allTasksGlobal.filter(t => t.status === "Done").length;
+    const pctAll = totalAll ? Math.round(doneAll / totalAll * 100) : 0;
+    list.innerHTML += buildCatBtn(null, "📋 Tất cả", doneAll, totalAll, activeCatId === null);
+    if (totalAll > 0) list.innerHTML += `<div class="progress-bar"><div class="progress-fill" style="width:${pctAll}%"></div></div>`;
+
+    // Each category
+    for (const cat of categories) {
+      // Get tasks for this category
+      const catTasks = allTasksGlobal.filter(t => t.category_id === cat.id);
+      const done = catTasks.filter(t => t.status === "Done").length;
+      const total = catTasks.length;
+      const pct = total ? Math.round(done / total * 100) : 0;
+      list.innerHTML += buildCatBtn(cat.id, `📂 ${cat.name}`, done, total, activeCatId === cat.id, true);
+      if (total > 0) list.innerHTML += `<div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>`;
+    }
+
+    // Gắn event
+    list.querySelectorAll(".cat-btn").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        if (e.target.classList.contains("cat-delete")) return;
+        const id = btn.dataset.id || null;
+        activeCatId = id;
+        await loadTasks(id);
+        updateSectionTitle();
+      });
+    });
+    list.querySelectorAll(".cat-delete").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        if (!confirm("Delete this category and all its tasks?")) return;
+        try {
+          await api("DELETE", `/categories/${btn.dataset.id}`);
+          if (activeCatId === btn.dataset.id) activeCatId = null;
+          toast('Category deleted!');
+          await loadAll();
+          updateSectionTitle();
+        } catch { toast('Error deleting category'); }
+      });
+    });
+  }
+
+  function buildCatBtn(id, label, done, total, active, showDelete = false) {
+    return `
+      <button class="cat-btn ${active ? 'active' : ''}" data-id="${id || ''}">
+        ${label}
+        <span class="cat-count">${done}/${total}</span>
+        ${showDelete ? `<button class="cat-delete" data-id="${id}">✕</button>` : ''}
+      </button>`;
+  }
+
+  function updateSectionTitle() {
+    const el = document.getElementById("sectionTitle");
+    if (!activeCatId) { el.textContent = "📋 Tất cả"; return; }
+    const cat = categories.find(c => c.id === activeCatId);
+    el.textContent = cat ? `📁 ${cat.name}` : "📋 Tất cả";
+  }
+
+  // ===== RENDER TASKS =====
+  function renderTasks() {
+    const list = document.getElementById("taskList");
+    const total = allTasks.length;
+    const done = allTasks.filter(t => t.status === "Done").length;
+    const ongoing = allTasks.filter(t => t.status === "Ongoing").length;
+    const pct = total ? Math.round(done / total * 100) : 0;
+
+    document.getElementById("statTotal").textContent = total;
+    document.getElementById("statDone").textContent = done;
+    document.getElementById("statOngoing").textContent = ongoing;
+
+    const progressWrap = document.getElementById("mainProgressWrap");
+    if (total > 0) {
+      progressWrap.style.display = "block";
+      document.getElementById("mainProgressLabel").textContent = `${pct}% hoàn thành`;
+      document.getElementById("mainProgressFill").style.width = `${pct}%`;
+    } else {
+      progressWrap.style.display = "none";
+    }
+
+    if (allTasks.length === 0) {
+      list.innerHTML = `<div class="empty-state">Chưa có task nào 👇</div>`;
+      return;
+    }
+
+    list.innerHTML = allTasks.map(task => `
+      <div class="task-item" data-id="${task.id}">
+        <span class="task-title ${task.status === 'Done' ? 'done' : ''}">${task.title}</span>
+        <select class="status-select ${task.status === 'Todo' ? 'todo' : task.status === 'Ongoing' ? 'ongoing' : 'done-sel'}" data-id="${task.id}">
+          <option ${task.status === 'Todo' ? 'selected' : ''}>Todo</option>
+          <option ${task.status === 'Ongoing' ? 'selected' : ''}>Ongoing</option>
+          <option ${task.status === 'Done' ? 'selected' : ''}>Done</option>
+        </select>
+        <button class="btn-delete-task" data-id="${task.id}">🗑</button>
+      </div>
+    `).join("");
+
+    // Status change
+    list.querySelectorAll(".status-select").forEach(sel => {
+      sel.addEventListener("change", async () => {
+        try {
+          await api("PATCH", `/tasks/${sel.dataset.id}`, { status: sel.value });
+          await loadTasks();
+        } catch { toast('Error updating'); }
+      });
+    });
+
+    // Delete task
+    list.querySelectorAll(".btn-delete-task").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        try {
+          await api("DELETE", `/tasks/${btn.dataset.id}`);
+          toast('Task deleted!');
+          await loadTasks();
+        } catch { toast('Error deleting task'); }
+      });
+    });
+  }
+
+  // ===== ADD TASK =====
+  document.getElementById("addTaskToggle").onclick = () => {
+    document.getElementById("addTaskToggle").style.display = "none";
+    document.getElementById("addTaskForm").classList.add("open");
+    document.getElementById("taskInput").focus();
+  };
+  document.getElementById("btnCancelTask").onclick = () => {
+    document.getElementById("addTaskToggle").style.display = "block";
+    document.getElementById("addTaskForm").classList.remove("open");
+    document.getElementById("taskInput").value = "";
+  };
+  document.getElementById("btnSubmitTask").onclick = async () => {
+    const title = document.getElementById("taskInput").value.trim();
+    if (!title) { toast('Please enter task name!'); return; }
+    try {
+      await api("POST", "/tasks/", { title, category_id: activeCatId });
+      document.getElementById("taskInput").value = "";
+      document.getElementById("addTaskToggle").style.display = "block";
+      document.getElementById("addTaskForm").classList.remove("open");
+      toast('Task added!');
+      await loadTasks();
+    } catch { toast('Error adding task'); }
+  };
+  document.getElementById("taskInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") document.getElementById("btnSubmitTask").click();
+  });
+
+  // ===== ADD CATEGORY =====
+  document.getElementById("btnAddCat").onclick = addCategory;
+  document.getElementById("catInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") addCategory();
+  });
+  async function addCategory() {
+    const name = document.getElementById("catInput").value.trim();
+    if (!name) { toast('Please enter category name!'); return; }
+    try {
+      await api("POST", "/categories/", { name });
+      document.getElementById("catInput").value = "";
+      toast('Category created!');
+      await loadCategories();
+    } catch { toast('Error creating category'); }
+  }
+
+  // Show login initially
+  document.getElementById("loginPage").style.display = "flex";
+</script>
+</body>
+</html>

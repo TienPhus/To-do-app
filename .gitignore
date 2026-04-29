@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# Firebase - KHÔNG commit lên GitHub!
+serviceAccountKey.json
+*.json.bak
+.env
+.env.local
+
+# Firebase frontend config
+frontend/firebase.config.js
+
+# IDE - PyCharm
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
