@@ -1,6 +1,6 @@
 # ✅ Do-It — To-do App
 
-Ứng dụng quản lý công việc cá nhân với tính năng phân danh mục, theo dõi tiến độ và đăng nhập Google qua Firebase Authentication.
+Ứng dụng quản lý công việc cá nhân với tính năng phân danh mục, theo dõi tiến độ và đăng nhập bằng tài khoản Google qua Firebase Authentication.
 
 ---
 
@@ -87,7 +87,7 @@ pip install -r requirements.txt
 - Click **Generate new private key** → tải file JSON
 - Đổi tên thành `serviceAccountKey.json` và đặt vào thư mục `backend/`
 
-> ⚠️ File `serviceAccountKey.json` không được commit lên GitHub (đã có trong `.gitignore`)
+> ⚠️ File `serviceAccountKey.json` không commit lên GitHub (đã có trong `.gitignore`)
 
 ### Tạo Composite Index cho Firestore
 
