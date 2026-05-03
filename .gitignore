@@ -6,7 +6,7 @@ __pycache__/
 venv/
 env/
 
-# Firebase - KHÔNG commit lên GitHub!
+# Firebase 
 serviceAccountKey.json
 *.json.bak
 .env
