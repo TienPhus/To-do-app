@@ -139,7 +139,7 @@ Mở trình duyệt tại: `http://localhost:5500/index.html`
 
 ## Video Demo
 
-> 🎬 [Link video demo](https://...)
+> 🎬 [Link video demo](https://www.youtube.com/watch?v=572zsi6G9Xc)
 
 Nội dung video:
 - Giới thiệu ứng dụng
